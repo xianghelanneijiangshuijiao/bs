@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="shortcut icon" href="../resources/favicon.ico" th:href="@{/static/favicon.ico}"/>
+    <link rel="stylesheet" href="layui/css/layui.css" media="all">
+    <script src="js/jquery.js"></script>
+    <script>
+        $(function  () {
+            layui.use(['form', 'layer', 'table', 'upload', 'layedit', 'laydate'], function () {
+                var $ = layui.jquery,
+                    form = layui.form;
+                /*      table = layui.table,
+                      upload = layui.upload,
+                      layedit = layui.layedit,
+                      laydate = layui.laydate,
+                      layer = layui.layer;*/
+                form.on('submit(demo1)', function (data) {
+                    layer.msg(JSON.stringify(data.field));
+                    /*    var sname=data.field.sname;
+                    var sno=data.field.sno;
+                    var pwd=data.field.pwd;
+                    var specialty=data.field.specialty;*/
+
+                    //JSON.stringify(data.field)   这是表单中所有的数据
+
+                    $.ajax({
+                        "method":"post",
+                        "contentType":"application/json;charset=UTF-8",
+                        "url":"/updataStudent",
+                        "data":JSON.stringify( data.field),//提交表单的数据
+                        "dataType":'',
+                        "success":function (suc) {
+                            if (suc==200) {
+                               /* var index = parent.layer.getFrameIndex(window.name);
+                                parent.layer.close(index);
+                                parent.layer.msg(res.stateMsg, {icon: 1});
+                                parent.layui.table.reload(tableName);*/
+                                var index = parent.layer.getFrameIndex(window.name);
+                                parent.layer.close(index);//关闭当前页
+                            } else {
+                                layer.msg(res.stateMsg, {icon: 2});
+
+                            }
+                        },
+                        error: function () {
+                            console.log("caozuosibai")
+                            layer.close(loading);
+                            layer.msg('操作失败', {icon: 2});
+                        }
+                    });
+                    return false;//  //防止表单提交两次
+                });
+            });
+        });
+
+
+
+
+
+    </script>
+
+</head>
+<body>
+<script src="layui/layui.js" charset="utf-8"></script>
+<ins class="adsbygoogle" style="display:inline-block;width:970px;height:90px" data-ad-client="ca-pub-6111334333458862" data-ad-slot="3820120620"></ins>
+<form class="layui-form" method="post" lay-filter="example">
+    <div class="layui-form-item">
+        <label class="layui-form-label">学号</label>
+        <div class="layui-input-block">
+            <input type="text" name="sno" lay-verify="sname" autocomplete="off" placeholder="请输入学号" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">学生名</label>
+        <div class="layui-input-block">
+            <input type="text" name="sname" lay-verify="sname" autocomplete="off" placeholder="请输入姓名" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">密码框</label>
+        <div class="layui-input-block">
+            <input type="password" name="pwd" placeholder="请输入密码" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">单选框</label>
+        <div class="layui-input-block">
+            <input type="radio" name="sex" value="男" title="男" checked="">
+            <input type="radio" name="sex" value="女" title="女">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">行内选择框</label>
+        <div class="layui-input-inline">
+            <select name="academy">
+                <option value="">请选择学院</option>
+                <option value="信息科学与工程学院">信息科学与工程学院</option>
+                <option value="理学院">理学院</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">行内选择框</label>
+        <div class="layui-input-inline">
+            <select name="specialty">
+                <option value="">请选择专业</option>
+                <option value="计算机科学与技术">计算机科学与技术</option>
+                <option value="物联网">物联网</option>
+                <option value=“软件工程”>软件工程</option>
+                <option value="网络安全">网络安全</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">行内选择框</label>
+        <div class="layui-input-inline">
+            <select name="province">
+                <option value="">请选择省份</option>
+                <option value=广西>广西</option>
+                <option value=广东>广东</option>
+                <option value=云南>云南</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label"></label>
+        <div class="layui-input-block">
+            <input type="text" name="status" lay-verify="status" autocomplete="off"  class="layui-input" value="1"  style="display:none">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label"></label>
+        <div class="layui-input-block">
+            <input type="text" name="num" lay-verify="num" autocomplete="off"  class="layui-input" value="1"  style="display:none">
+        </div>
+    </div>
+
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <button type="submit" class="layui-btn" lay-submit="" lay-filter="demo1" >立即提交</button>
+        </div>
+    </div>
+</form>
+<script src="layui/layui.js" charset="utf-8"></script>
+
+</body>
+</html>

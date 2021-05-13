@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="shortcut icon" href="../resources/favicon.ico" th:href="@{/static/favicon.ico}"/>
+    <title>Title</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="layui/css/layui.css" media="all">
+    <script src="js/jquery.js"></script>
+    <!-- 注意：如果你直接复制所有代码到本地，上述css路径需要改成你本地的 -->
+</head>
+<body>
+<table class="layui-hide" id="test" lay-filter="test"></table>
+<script type="text/html" id="toolbarDemo">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-sm" lay-event="getCheckData">获取选中行数据</button>
+        <button class="layui-btn layui-btn-sm" lay-event="getCheckLength">获取选中数目</button>
+        <button class="layui-btn layui-btn-sm" lay-event="isAll">验证是否全选</button>
+    </div>
+</script>
+<script type="text/html" id="barDemo">
+  <!--  <a class="layui-btn layui-btn-xs" lay-event="edit" onclick="window.location='studentedit.html'">编辑</a>-->
+    <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+</script>
+
+
+<script src="layui/layui.js" charset="utf-8"></script>
+<!-- 注意：如果你直接复制所有代码到本地，上述 JS 路径需要改成你本地的 -->
+
+<script>
+
+    layui.use('layer', function(){
+        var layer = layui.layer;
+        var $=layui.$;
+        var table = layui.table;
+        var form = layui.form;
+        //温馨提示：默认由前端自动合计当前行数据。从 layui 2.5.6 开始： 若接口直接返回了合计行数据，则优先读取接口合计行数据。
+        //详见：https://www.layui.com/doc/modules/table.html#totalRow
+        table.render({
+            elem: '#test'
+            ,url:'/list'
+            ,toolbar: '#toolbarDemo'
+            ,title: '用户数据表'
+            ,totalRow: true  //合计总数
+            ,cols: [
+                [
+                {type: 'checkbox', fixed: 'left'}        //unresize 设计尺寸
+                ,{field:'sno', title:'学号', width:150, fixed: 'left', unresize: true, sort: true, totalRowText: '合计'}
+                ,{field:'sname', title:'姓名', width:120, }
+                ,{field:'pwd', title:'密码', width:150,}//templet:同台加标签，使得邮箱字体变为斜体
+                ,{field:'sex', title:'性别', width:80, edit: 'text', sort: true}
+                ,{field:'academy', title:'学院', width:80, sort: true, totalRow: true}//totalRow
+                ,{field:'specialty', title:'专业', width:100, sort: true, totalRow: true}
+                ,{field:'province', title:'省份'}
+                ,{field:'status', title:'状态', width:100}
+                ,{fixed: 'right', title:'操作', toolbar: '#barDemo', width:150}
+              ]
+            ]
+            ,page: true //分页操作
+        });
+
+        //工具栏事件
+        table.on('toolbar(test)', function(obj){
+            var checkStatus = table.checkStatus(obj.config.id);
+            switch(obj.event){
+                case 'getCheckData':
+                    var data = checkStatus.data;
+                    layer.alert(JSON.stringify(data));
+                    break;
+                case 'getCheckLength':
+                    var data = checkStatus.data;
+                    layer.msg('选中了：'+ data.length + ' 个');
+                    break;
+                case 'isAll':
+                    layer.msg(checkStatus.isAll ? '全选': '未全选')
+                    break;
+            };
+        });
+        //监听工具条
+        table.on('tool(test)', function(obj){
+            var data = obj.data;//获取当前行数据
+            var layEvent=obj.event;//获得lay-event对应的值
+            var tr=obj.tr;//获取当前行tr的DOM对象
+
+
+            if(layEvent === 'detail'){//查看
+                layer.msg('ID：'+ data.id + ' 的查看操作');
+            } else if(obj.event === 'del'){
+                layer.confirm('真的删除行么', function(index){ //layer.confirm 弹出删除框
+                  /*  obj.del();
+                    layer.close(index);*/
+                    $.ajax({
+                        url:'/deletebyid',
+                        type:'post',
+                        data:{
+                            'sno':data.sno
+                        },//向服务端发送删除的id
+                        success:function (suc) {
+                            if(suc==200){
+                                obj.del();//删除对应行（tr）的DOM结构，并更新缓存
+                                layer.close(index);
+                                console.log(index);
+                                layer.msg("删除成功",{icon:1});
+                            }
+                            else{
+                                layer.msg("删除失败",{icon:1});
+                            }
+                        }
+                    })
+                });
+            } else if(obj.event === 'edit'){
+               /* layer.alert('编辑行：<br>'+ JSON.stringify(data))*/
+                //获取对应行的数据
+                var data=obj.data;
+                layer.open({
+                    type: 2,
+                    title: '编辑信息',
+                    area: ['250px', '250px'],//设置子页面大小
+                    offset: 'r',
+                    content: 'studentedit.html',
+                    success: function(layero, index){
+                        var body = layer.getChildFrame('body',index);
+                        body.find('[name=sno]').val(data.sno);
+                        body.find('[name=sname]').val(data.sname);
+                        body.find('[name=pwd]').val(data.pwd);
+                        body.find('[name=sex]').val(data.sex);
+                        body.find('[academy]').val(data.academy);
+                        body.find('[specialty]').val(data.specialty);
+                        body.find('[province]').val(data.province);
+                    }
+                });
+
+            }
+        });
+
+ /*       form.on('tool(example)', function(obj) {
+            var data = obj.data;  // 获得当前行数据
+            var layEvent = obj.event; // 获得 lay-event 对应的值（也可以是表头的event 参数对应的值）
+            var tr = obj.tr;   // 获得当前行 tr 的DOM对象
+            if (layEvent === 'edit') {//修改操作
+                var data = obj.data;
+                layer.open({
+                    title : '编辑学生',
+                    type : 1,
+                    area : [ '62%', '80%' ],
+                    maxmin : true,
+                    shadeClose : true,
+                    content : $('#form'),
+                    shade : 0, // 不显示遮罩
+                    success : function(layero, index) {
+                        layer.iframeAuto(index);
+                        console.log(data)
+                        $('#chc_id').val(data.chc_id); //回显的操作最重要的一步就是这个啦，其他的也是差不多的
+                    }
+                });
+            } //if结束
+        });*/
+
+/*        table.on('tool(users)', function(obj){ //注：tool是工具条事件名，test是table原始容器的属性 lay-filter="对应的值"
+            var data = obj.data; //获得当前行数据
+            var layEvent = obj.event; //获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+            var tr = obj.tr; //获得当前行 tr 的DOM对象
+
+            if(layEvent === 'detail'){ //查看
+                //do somehing
+                layer.alert('序号:'+ data.userId+'<br>id:'+data.jobNo+'<br>编号：'+data.userName+'<br>密码:'+data.pwd+'<br>权限:'+data.class);
+
+            } else if(layEvent === 'del'){ //删除
+                layer.confirm('真的删除ID为：'+data.userId+"的用户吗?", function(index){
+
+                    //console.log(data.p_id);
+                    //向服务端发送删除指令
+                    $.ajax({
+                        url:'../php/users.del.php',
+                        type:'get',
+                        data:{'id':data.userId},//向服务端发送删除的id
+                        success:function(suc){
+                            if(suc==200){
+                                obj.del(); //删除对应行（tr）的DOM结构，并更新缓存
+                                layer.close(index);
+                                console.log(index);
+                                layer.msg("删除成功",{icon:1});
+                            }
+                            else{
+                                layer.msg("删除失败",{icon:5});
+                            }
+                        }
+                    });
+                    layer.close(index);
+                });
+
+            } else if(layEvent === 'edit'){ //编辑
+                console.log(data);
+                layer.open({
+                    type: 1,
+                    area: ['500px', '700px'],
+                    title: "更改信息",
+                    fixed: false, //不固定
+                    maxmin: true,
+                    maxmin: false,
+                    shadeClose:false,
+                    content: $('#usersedit')
+                });
+                //表单值
+                form.val("usereditform",{
+                    "userid":data.userId,
+                    "userno":data.jobNo,
+                    "username":data.userName,
+                    "userpwd":data.pwd,
+                    "userclass":data.class
+                });
+
+
+            }
+        });*/
+
+    });
+</script>
+
+</body>
+</html>

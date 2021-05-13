@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="shortcut icon" href="../resources/favicon.ico" th:href="@{/static/favicon.ico}"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="js/echarts.min.js"></script>
+    <script src="js/jquery.js"></script>
+
+
+</head>
+<body>
+<div id="main" style="width: 600px;height:400px;"></div>
+<script type="text/javascript">
+
+    $(function(){
+        $.ajax({
+            "url":"/barVO",
+            "type":"POST",
+            "success":function(data){
+                console.log(data.sex)
+                console.log(data.count)
+
+                // 基于准备好的dom，初始化echarts实例
+                var myChart = echarts.init(document.getElementById('main'));
+
+                // 指定图表的配置项和数据
+                var option = {
+                    xAxis: {
+                        type: '',
+                        data: data.sex
+                    },
+                    yAxis: {
+                        type: ''
+                    },
+                    series: [{
+                        data: data.count,
+                        type: 'bar'
+                    }]
+                };
+
+                // 使用刚指定的配置项和数据显示图表。
+                myChart.setOption(option);
+
+            }
+        });
+    })
+
+
+</script>
+
+</body>
+</html>
